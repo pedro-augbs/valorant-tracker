@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "valorant-tracker",
+    "name": "Stats Valo",
     "slug": "valorant-tracker",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "ios": {
       "supportsTablet": true
     },
@@ -19,7 +19,12 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/favicon.png",
+      "output": "server"
+    },
+    "plugins": [
+      "expo-router"
+    ],
+    "scheme": "stats-valo"
   }
 }
