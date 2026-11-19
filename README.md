@@ -29,7 +29,9 @@ O projeto aplica conceitos de desenvolvimento móvel presentes no material de au
 | **Detalhe do agente** | Exibe descrição, função e as quatro habilidades ativas, com seus ícones e explicações. A marcação visual recebida da API é removida das descrições. |
 | **Mapas** | Mostra imagens e nomes dos mapas 5v5 contemplados pelas recomendações do projeto. |
 | **Composições do mapa** | Apresenta duas formações de cinco agentes para cada mapa, com função e contribuição tática. Agentes favoritos recebem estrela e borda coral. Cada agente abre seu detalhe. |
-| **Perfil** | Consulta nível, rank, RR e até cinco partidas competitivas recentes de PC usando o Riot ID salvo. Permite trocar ou remover esse identificador. |
+| **Perfil** | Reúne a Central de Evolução com rank, nível, RR, gráficos de desempenho, comparação por agente e histórico de até dez partidas competitivas de PC. Permite alternar entre os recortes de cinco e dez partidas, trocar ou remover o Riot ID. |
+| **Detalhe da partida** | Abre o mapa, resultado, placar, K/D/A, headshots, ACS, dano por round e as duas equipes com destaque para o jogador consultado. |
+| **Montador de equipe** | Permite escolher cinco agentes para um mapa, experimentar as formações recomendadas e acompanhar a cobertura das quatro funções. Favoritos recebem destaque nas escolhas. |
 | **Buscar** | Consulta outro Riot ID autorizado para a demonstração, sem substituir o identificador salvo no Perfil. |
 | **Favoritos** | Reúne os agentes marcados e permite abrir seus detalhes ou remover a marcação. |
 | **Sobre** | Apresenta o objetivo, os autores e as fontes dos dados. |
@@ -102,7 +104,7 @@ O aplicativo envia o Riot ID para `POST /api/jogador`, uma rota de servidor do p
 | --- | --- |
 | `GET /valorant/v2/account/{name}/{tag}` | Identificar a conta, o PUUID, a região e o nível. |
 | `GET /valorant/v3/by-puuid/mmr/{região}/pc/{puuid}` | Consultar o rank atual e os pontos RR. |
-| `GET /valorant/v4/by-puuid/matches/{região}/pc/{puuid}?mode=competitive&size=5` | Consultar até cinco partidas competitivas recentes. |
+| `GET /valorant/v4/by-puuid/matches/{região}/pc/{puuid}?mode=competitive&size=10` | Consultar até dez partidas competitivas recentes. |
 
 Primeiro, o servidor resolve a conta. Em seguida, consulta rank e histórico em paralelo. As partidas são ordenadas da mais recente para a mais antiga, e o jogador é localizado pelo PUUID. O resultado é associado ao seu time pelo identificador do time.
 
@@ -144,7 +146,15 @@ As preferências são armazenadas como JSON no AsyncStorage sob a chave `@stats-
 | `favorites` | Guardar os UUIDs dos agentes favoritos. |
 | `started` | Registrar que o usuário já concluiu a entrada inicial. |
 
-As gravações são executadas em sequência para preservar atualizações feitas em rápida sucessão. A interface confirma a mudança após a persistência bem-sucedida. A consulta feita na aba Buscar fica no estado da tela.
+As gravações são executadas em sequência para preservar atualizações feitas em rápida sucessão. A interface confirma a mudança após a persistência bem-sucedida. As consultas usam um cache em memória de um minuto para reutilizar os dados ao abrir uma partida. A aba Buscar exibe as cinco partidas mais recentes. A Central de Evolução permite selecionar os recortes de cinco ou dez partidas disponíveis.
+
+### Central de Evolução
+
+O Perfil oferece três seções. **Resumo** reúne taxa de vitórias, K/D acumulado, porcentagem de headshots, sequência de resultados, gráfico de abates por partida e comparação por mapa. **Agentes** agrupa as partidas por personagem e mostra quantidade de jogos, K/D, vitórias e headshots, com acesso às habilidades. **Partidas** abre o histórico e seus detalhes.
+
+Os gráficos seguem a ordem cronológica, da partida mais antiga para a mais recente. A taxa de vitórias usa os resultados conhecidos do recorte. Headshots representa a proporção dos impactos na cabeça sobre os impactos totais registrados. ACS é a pontuação de combate dividida pelo número de rounds. O dano médio por round segue a mesma divisão. Valores ausentes aparecem como um traço.
+
+O placar detalhado identifica os personagens e o jogador consultado, destacado como “Você”. Os nomes das demais contas ficam fora da resposta enviada ao aplicativo.
 
 ### K/D e K/D/A
 
@@ -161,6 +171,8 @@ Cada card mostra também o **K/D/A**, que apresenta os três valores individuais
 ### Composições recomendadas
 
 Cada mapa possui uma formação principal e uma alternativa com proposta tática própria. São cinco agentes distintos por formação, acompanhados de explicações sobre como podem contribuir naquele mapa.
+
+A ação **Montar minha equipe** abre cinco espaços de seleção. É possível partir da formação principal ou alternativa, buscar agentes e trocar escolhas. A cobertura de funções é atualizada a cada seleção, e uma opção da formação principal pode ser sugerida para ampliar essa cobertura, priorizando favoritos. A análise utiliza a distribuição de funções e explica esse critério na tela. A equipe montada permanece no estado da tela durante a edição.
 
 Essas recomendações são conteúdo editorial definido no código. Sua manutenção é feita em `src/lib/compositions.ts`. Os favoritos do usuário são cruzados com as duas formações para destacar agentes já marcados.
 
@@ -180,12 +192,15 @@ src/
 │   ├── (tabs)/                 # Abas Agentes, Mapas, Perfil, Buscar e Favoritos
 │   ├── agente/[id].tsx         # Detalhes e habilidades
 │   ├── mapa/[id].tsx           # Composições e destaque de favoritos
+│   ├── partida/[id].tsx       # Placar e desempenho individual por partida
+│   ├── equipe/[id].tsx        # Montagem interativa de equipe por mapa
 │   ├── api/jogador+api.ts      # Integração de servidor com a HenrikDev
 │   ├── sobre.tsx
 │   ├── termos.tsx
 │   └── privacidade.tsx
 ├── components/
 │   ├── agent-list.tsx          # Lista reutilizada em Agentes e Favoritos
+│   ├── performance.tsx        # Gráficos e comparação por agente e mapa
 │   ├── player-stats.tsx        # Estatísticas usadas em Perfil e Buscar
 │   ├── riot-id-form.tsx        # Formulário de Riot ID
 │   └── ui.tsx                  # Estrutura das telas, botões e feedback
@@ -194,6 +209,7 @@ src/
     ├── catalog.ts             # Tipos, consulta e limpeza de textos da API
     ├── compositions.ts        # Formações por mapa e contribuições táticas
     ├── player.ts              # Tipos, validação do Riot ID e cálculo de K/D
+    ├── use-player.ts          # Consulta compartilhada e cache de um minuto
     └── theme.ts               # Cores e referências de fontes
 
 assets/fonts/                  # Fontes locais e suas licenças
@@ -278,7 +294,7 @@ O aparelho precisa alcançar o servidor e usar um cliente compatível com o **Ex
 3. **Navegação de detalhe** — Abrir um agente e conferir descrição, função e quatro habilidades com ícones.
 4. **Persistência** — Marcar um agente como favorito, acessar Favoritos e recarregar a aplicação para verificar que a escolha foi mantida.
 5. **Relacionamento entre telas** — Abrir um mapa e comparar suas duas composições. Conferir o destaque de um agente favoritado que esteja entre as recomendações e abrir seu detalhe.
-6. **Perfil** — Salvar um Riot ID autorizado e conferir nível, rank, RR, K/D e partidas recentes com imagens.
+6. **Perfil** — Salvar um Riot ID autorizado e conferir nível, rank, RR e a Central de Evolução. Alternar entre cinco e dez partidas e explorar Resumo, Agentes e Partidas. Abrir uma partida para conferir o placar e revisar as habilidades do personagem.
 7. **Busca independente** — Buscar uma conta autorizada pela aba Buscar e retornar ao Perfil para verificar a conta salva.
 8. **Tratamento de falhas** — Buscar uma conta fora da lista para observar a mensagem de autorização. Uma conta inexistente incluída na lista permite demonstrar o tratamento de jogador não encontrado.
 9. **Informações do projeto** — Abrir Sobre, Termos de uso e Política de privacidade a partir do Perfil.
@@ -298,7 +314,7 @@ A validação realizada durante o desenvolvimento incluiu navegação no navegad
 ## Escopo e limitações atuais
 
 - A aplicação foi preparada para uma **demonstração acadêmica fechada**, com consultas restritas às contas configuradas no servidor.
-- As estatísticas contemplam **PC e até cinco partidas competitivas recentes**. A quantidade exibida depende dos registros concluídos e válidos retornados pelo serviço.
+- As estatísticas contemplam **PC e até dez partidas competitivas recentes**. A quantidade exibida depende dos registros concluídos e válidos retornados pelo serviço.
 - A seleção de mapas acompanha as recomendações cadastradas no projeto. Mudanças no jogo podem exigir revisão das formações e inclusão de novos mapas.
 - Catálogo e estatísticas dependem de conexão e disponibilidade das APIs. As preferências do usuário são persistidas localmente.
 - Um aplicativo nativo distribuído para funcionar separadamente do computador de desenvolvimento precisa de um servidor implantado e da origem de produção configurada no Expo Router.
