@@ -4,8 +4,8 @@ import { parseRiotId } from '../lib/player';
 import { colors } from '../lib/theme';
 import { Action, styles } from './ui';
 
-export function RiotIdForm({ label, onSubmit, initial = '', disabled = false }: {
-  label: string; onSubmit: (value: string) => void; initial?: string; disabled?: boolean;
+export function RiotIdForm({ label, onSubmit, initial = '', disabled = false, hint }: {
+  label: string; onSubmit: (value: string) => void; initial?: string; disabled?: boolean; hint?: string;
 }) {
   const [value, setValue] = useState(initial);
   const [invalid, setInvalid] = useState(false);
@@ -25,6 +25,7 @@ export function RiotIdForm({ label, onSubmit, initial = '', disabled = false }: 
         autoCapitalize="none" autoCorrect={false} maxLength={129} editable={!disabled}
         returnKeyType="go" onSubmitEditing={submit} />
       {invalid && <Text accessibilityLiveRegion="polite" style={styles.error}>Digite o Riot ID no formato nome#tag.</Text>}
+      {hint && <Text style={styles.muted}>{hint}</Text>}
       <Action label={label} onPress={submit} disabled={disabled} />
     </View>
   );

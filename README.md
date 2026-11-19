@@ -16,7 +16,7 @@ O projeto aplica conceitos de desenvolvimento móvel presentes no material de au
 - [Organização do código](#organização-do-código)
 - [Como executar](#como-executar)
 - [Roteiro de demonstração para avaliação](#roteiro-de-demonstração-para-avaliação)
-- [Testes e verificações](#testes-e-verificações)
+- [Verificações](#verificações)
 - [Escopo e limitações atuais](#escopo-e-limitações-atuais)
 - [Referências e créditos](#referências-e-créditos)
 
@@ -24,7 +24,7 @@ O projeto aplica conceitos de desenvolvimento móvel presentes no material de au
 
 | Tela | O que permite fazer |
 | --- | --- |
-| **Inicial** | Apresenta o app, recebe e valida o Riot ID e permite entrar por “Explorar sem Riot ID”. A escolha de entrada fica salva. |
+| **Inicial** | Apresenta o app com a arte da Jett, oferece “Fazer login” por Riot ID e “Entrar sem login” e valida o identificador informado. A escolha de entrada fica salva. |
 | **Agentes** | Lista os agentes jogáveis recebidos da API, com retrato, nome e função. Oferece filtros por função e botão de favorito. |
 | **Detalhe do agente** | Exibe descrição, função e as quatro habilidades ativas, com seus ícones e explicações. A marcação visual recebida da API é removida das descrições. |
 | **Mapas** | Mostra imagens e nomes dos mapas 5v5 contemplados pelas recomendações do projeto. |
@@ -63,7 +63,7 @@ Tela Inicial
     └── Favoritos ──── Detalhe do Agente
 ```
 
-A tela inicial aparece no primeiro acesso. Depois de continuar ou escolher explorar, a entrada passa a levar diretamente às abas. Quem entrou sem Riot ID pode cadastrá-lo posteriormente no Perfil. Termos e privacidade também ficam acessíveis na tela inicial.
+A tela inicial aparece no primeiro acesso. Depois de continuar ou escolher explorar, a entrada passa a levar diretamente às abas. “Fazer login” salva o Riot ID no aparelho para consultar o Perfil. Quem entrou sem login pode cadastrá-lo posteriormente no Perfil. Termos e privacidade também ficam acessíveis na tela inicial.
 
 ## Tecnologias utilizadas
 
@@ -79,7 +79,7 @@ A tela inicial aparece no primeiro acesso. Depois de continuar ou escolher explo
 | Expo Font e Ionicons | Fontes locais e ícones de navegação e favoritos. |
 | React Native Safe Area Context | Espaçamento em relação às áreas reservadas pelo sistema do aparelho. |
 | Fetch e AbortController | Requisições HTTP e cancelamento de consultas quando o componente é desmontado. |
-| ESLint, TypeScript e Node Test Runner | Análise estática e testes automatizados das regras do projeto. |
+| ESLint e TypeScript | Análise estática e verificação de tipos do projeto. |
 
 ## APIs e fluxo dos dados
 
@@ -196,7 +196,6 @@ src/
     ├── player.ts              # Tipos, validação do Riot ID e cálculo de K/D
     └── theme.ts               # Cores e referências de fontes
 
-tests/                         # Testes automatizados das regras
 assets/fonts/                  # Fontes locais e suas licenças
 docs/design/                   # Mockup de referência
 .env.example                   # Modelo de configuração sem credenciais
@@ -257,7 +256,6 @@ O aparelho precisa alcançar o servidor e usar um cliente compatível com o **Ex
 | `npm start` | Iniciar o servidor Expo. |
 | `npm run android` | Iniciar o Expo solicitando abertura no Android disponível no ambiente. |
 | `npm run ios` | Iniciar o Expo solicitando abertura no iOS disponível no ambiente. |
-| `npm test` | Executar os testes das regras de negócio. |
 | `npm run lint` | Executar a análise do ESLint. |
 | `npx tsc --noEmit` | Verificar os tipos TypeScript. |
 
@@ -275,7 +273,7 @@ O aparelho precisa alcançar o servidor e usar um cliente compatível com o **Ex
 
 ## Roteiro de demonstração para avaliação
 
-1. **Entrada e validação** — No primeiro acesso, tentar um Riot ID sem `#` para observar a validação. Depois, escolher “Explorar sem Riot ID”.
+1. **Entrada e validação** — No primeiro acesso, tentar um Riot ID sem `#` para observar a validação. Depois, escolher “Entrar sem login”.
 2. **Consumo de API e filtros** — Abrir Agentes, selecionar uma função e observar a atualização da lista.
 3. **Navegação de detalhe** — Abrir um agente e conferir descrição, função e quatro habilidades com ícones.
 4. **Persistência** — Marcar um agente como favorito, acessar Favoritos e recarregar a aplicação para verificar que a escolha foi mantida.
@@ -284,25 +282,18 @@ O aparelho precisa alcançar o servidor e usar um cliente compatível com o **Ex
 7. **Busca independente** — Buscar uma conta autorizada pela aba Buscar e retornar ao Perfil para verificar a conta salva.
 8. **Tratamento de falhas** — Buscar uma conta fora da lista para observar a mensagem de autorização. Uma conta inexistente incluída na lista permite demonstrar o tratamento de jogador não encontrado.
 9. **Informações do projeto** — Abrir Sobre, Termos de uso e Política de privacidade a partir do Perfil.
-10. **Código e testes** — Apresentar o contexto compartilhado, o armazenamento local, a rota de servidor e os resultados dos comandos de verificação.
+10. **Código e verificações** — Apresentar o contexto compartilhado, o armazenamento local, a rota de servidor e os resultados dos comandos de verificação.
 
-## Testes e verificações
+## Verificações
 
-Os testes utilizam `node:test` e `node:assert/strict`, com execução dos módulos TypeScript pelo Node.js.
-
-| Arquivo | Comportamentos verificados |
-| --- | --- |
-| `tests/catalog.test.mjs` | Remoção de tags de formatação recebidas da API, preservando o conteúdo textual. |
-| `tests/compositions.test.mjs` | Cobertura dos 13 mapas, duas formações distintas por mapa, cinco agentes únicos por formação e contribuições preenchidas. |
-| `tests/player.test.mjs` | Validação do Riot ID, preservação de espaços internos e cálculo de K/D, incluindo zero mortes e ausência de partidas. |
+O projeto utiliza ESLint e TypeScript para verificar o código.
 
 ```bash
-npm test
 npm run lint
 npx tsc --noEmit
 ```
 
-Os testes automatizados dessas regras são independentes da chave da HenrikDev. A validação realizada durante o desenvolvimento também incluiu navegação no navegador em larguras de celular, persistência após recarga, consulta real de conta autorizada e exportação do bundle Android.
+A validação realizada durante o desenvolvimento incluiu navegação no navegador em larguras de celular, persistência após recarga, consulta real de conta autorizada e exportação do bundle Android.
 
 ## Escopo e limitações atuais
 
