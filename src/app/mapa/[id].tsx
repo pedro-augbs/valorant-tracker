@@ -3,6 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Link, router, useLocalSearchParams } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Action, Feedback, Heading, Screen, styles } from '../../components/ui';
+import { MapImprovement } from '../../components/map-improvement';
 import { useApp } from '../../lib/app-state';
 import { alternatives, compositions } from '../../lib/compositions';
 import { colors } from '../../lib/theme';
@@ -27,6 +28,7 @@ export default function MapDetail() {
       <Image source={map.splash ?? map.listViewIcon} style={local.hero} />
       <Heading>{map.displayName}</Heading>
       <Action label="Montar minha equipe" onPress={() => router.push({ pathname: '/equipe/[id]', params: { id } })} />
+      <MapImprovement map={map} />
       {agents.error && <Feedback message="Não foi possível carregar os retratos dos agentes." retry={agents.retry} />}
       {[{ title: 'Formação principal', picks }, alternative].map((formation) => (
         <View key={formation.title} style={local.formation}>

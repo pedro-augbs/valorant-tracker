@@ -28,7 +28,7 @@ O projeto aplica conceitos de desenvolvimento móvel presentes no material de au
 | **Agentes** | Lista os agentes jogáveis recebidos da API, com retrato, nome e função. Oferece filtros por função e botão de favorito. |
 | **Detalhe do agente** | Exibe descrição, função e as quatro habilidades ativas, com seus ícones e explicações. A marcação visual recebida da API é removida das descrições. |
 | **Mapas** | Mostra imagens e nomes dos mapas 5v5 contemplados pelas recomendações do projeto. |
-| **Composições do mapa** | Apresenta duas formações de cinco agentes para cada mapa, com função e contribuição tática. Agentes favoritos recebem estrela e borda coral. Cada agente abre seu detalhe. |
+| **Composições do mapa** | Apresenta duas formações de cinco agentes para cada mapa, com função e contribuição tática. Agentes favoritos recebem estrela e borda coral. Também analisa as partidas recentes do jogador naquele mapa e sugere ajustes para experimentar. Cada agente abre seu detalhe. |
 | **Perfil** | Reúne a Central de Evolução com rank, nível, RR, gráficos de desempenho, comparação por agente e histórico de até dez partidas competitivas de PC. Permite alternar entre os recortes de cinco e dez partidas, trocar ou remover o Riot ID. |
 | **Detalhe da partida** | Abre o mapa, resultado, placar, K/D/A, headshots, ACS, dano por round e as duas equipes com destaque para o jogador consultado. |
 | **Montador de equipe** | Permite escolher cinco agentes para um mapa, experimentar as formações recomendadas e acompanhar a cobertura das quatro funções. Favoritos recebem destaque nas escolhas. |
@@ -175,6 +175,8 @@ Cada mapa possui uma formação principal e uma alternativa com proposta tática
 A ação **Montar minha equipe** abre cinco espaços de seleção. É possível partir da formação principal ou alternativa, buscar agentes e trocar escolhas. A cobertura de funções é atualizada a cada seleção, e uma opção da formação principal pode ser sugerida para ampliar essa cobertura, priorizando favoritos. A análise utiliza a distribuição de funções e explica esse critério na tela. A equipe montada permanece no estado da tela durante a edição.
 
 Essas recomendações são conteúdo editorial definido no código. Sua manutenção é feita em `src/lib/compositions.ts`. Os favoritos do usuário são cruzados com as duas formações para destacar agentes já marcados.
+
+A seção **Como melhorar neste mapa** filtra o histórico recente pelo mapa aberto e mostra quantidade de partidas, K/D e resultados. Sugestões explicáveis usam os totais de abates e mortes, as derrotas e os impactos registrados para propor exercícios de coordenação, revisão e precisão. A tela informa o recorte utilizado e oferece acesso a uma partida daquele mapa para revisão. Quem entrou sem Riot ID recebe um atalho para o Perfil. Mapas sem partidas no histórico recebem uma mensagem específica.
 
 ### Carregamento e falhas
 
