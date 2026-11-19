@@ -1,10 +1,11 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { PlayerStats } from '../../components/player-stats';
 import { RiotIdForm } from '../../components/riot-id-form';
 import { Action, Feedback, Heading, Screen, styles } from '../../components/ui';
 import { useApp } from '../../lib/app-state';
+import { colors, fonts } from '../../lib/theme';
 
 export default function Profile() {
   const { ready, storageError, retryStorage, preferences, setRiotId } = useApp();
@@ -45,11 +46,34 @@ export default function Profile() {
             <Action label="Remover Riot ID salvo" onPress={() => void save(null)} secondary disabled={busy} />
           </>}
       {!!error && <Text accessibilityLiveRegion="polite" style={styles.error}>{error}</Text>}
-      <View style={{ gap: 8 }}>
-        <Action label="Sobre o Stats Valo" onPress={() => router.push('/sobre')} secondary />
-        <Action label="Termos de uso" onPress={() => router.push('/termos')} secondary />
-        <Action label="Política de privacidade" onPress={() => router.push('/privacidade')} secondary />
+      <View style={local.footer}>
+        <Pressable accessibilityRole="link" accessibilityLabel="Sobre o Stats Valo"
+          onPress={() => router.push('/sobre')} style={local.link}>
+          <Text style={local.linkText}>Sobre</Text>
+        </Pressable>
+        <Pressable accessibilityRole="link" onPress={() => router.push('/termos')} style={local.link}>
+          <Text style={local.linkText}>Termos de uso</Text>
+        </Pressable>
+        <Pressable accessibilityRole="link" accessibilityLabel="Política de privacidade"
+          onPress={() => router.push('/privacidade')} style={local.link}>
+          <Text style={local.linkText}>Privacidade</Text>
+        </Pressable>
       </View>
     </Screen>
   );
 }
+
+const local = StyleSheet.create({
+  footer: {
+    marginTop: 'auto',
+    paddingTop: 20,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.divider,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  link: { minHeight: 48, paddingHorizontal: 8, justifyContent: 'center' },
+  linkText: { color: colors.muted, fontFamily: fonts.body, fontSize: 13 },
+});
