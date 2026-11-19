@@ -29,7 +29,7 @@ export default function Profile() {
 
   return (
     <Screen>
-      <Heading brand>Perfil</Heading>
+      <Heading brand>{riotId && !editing ? 'Minha evolução' : 'Perfil'}</Heading>
       {!ready
         ? storageError
           ? <Feedback message="Não foi possível abrir suas preferências." retry={retryStorage} />

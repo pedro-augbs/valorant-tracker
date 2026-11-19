@@ -3,8 +3,13 @@ import { parseRiotId, type Match, type Player } from '../../lib/player';
 type Account = { puuid: string; region: string; name: string; tag: string; account_level: number };
 type Rank = { current?: { tier: { id: number; name: string }; rr: number } };
 type HenrikMatch = {
-  metadata: { match_id: string; map: { id: string; name: string }; started_at: string; is_completed: boolean };
-  players: { puuid: string; agent: { id: string; name: string }; team_id: string; stats: Pick<Match, 'kills' | 'deaths' | 'assists'> }[];
+  metadata: { match_id: string; map: { id: string; name: string }; started_at: string; is_completed: boolean; game_length_in_ms: number };
+  players: {
+    puuid: string; agent: { id: string; name: string }; team_id: string;
+    stats: Pick<Match, 'kills' | 'deaths' | 'assists'> & {
+      score: number; headshots: number; bodyshots: number; legshots: number; damage: { dealt: number };
+    };
+  }[];
   teams: { team_id: string; won: boolean; rounds: { won: number; lost: number } }[];
 };
 
@@ -46,7 +51,7 @@ export async function POST(request: Request) {
     const path = encodeURIComponent(player.region) + '/pc/' + encodeURIComponent(player.puuid);
     const [rank, history] = await Promise.allSettled([
       henrik<Rank>('v3/by-puuid/mmr/' + path, key),
-      henrik<HenrikMatch[]>('v4/by-puuid/matches/' + path + '?mode=competitive&size=5', key),
+      henrik<HenrikMatch[]>('v4/by-puuid/matches/' + path + '?mode=competitive&size=10', key),
     ]);
     const current = rank.status === 'fulfilled' ? rank.value.data?.current : undefined;
     const recent = history.status === 'fulfilled' && Array.isArray(history.value.data) ? history.value.data : null;
@@ -65,9 +70,29 @@ export async function POST(request: Request) {
           agent: entry.agent.name,
           agentId: entry.agent.id,
           kills, deaths, assists,
+          startedAt: match.metadata.started_at,
+          durationSeconds: nonnegative(match.metadata.game_length_in_ms) === null ? null : Math.round(match.metadata.game_length_in_ms / 1000),
+          roundsWon: nonnegative(team?.rounds.won),
+          roundsLost: nonnegative(team?.rounds.lost),
+          headshots: nonnegative(entry.stats.headshots),
+          shots: [entry.stats.headshots, entry.stats.bodyshots, entry.stats.legshots].every((value) => nonnegative(value) !== null)
+            ? entry.stats.headshots + entry.stats.bodyshots + entry.stats.legshots : null,
+          damage: nonnegative(entry.stats.damage?.dealt),
+          score: nonnegative(entry.stats.score),
+          participants: match.players.filter((item) => [item.stats.kills, item.stats.deaths, item.stats.assists]
+            .every((value) => nonnegative(value) !== null)).map((item) => ({
+              agent: item.agent.name,
+              agentId: item.agent.id,
+              ally: item.team_id === entry.team_id,
+              self: item.puuid === player.puuid,
+              kills: item.stats.kills,
+              deaths: item.stats.deaths,
+              assists: item.stats.assists,
+              score: nonnegative(item.stats.score),
+            })),
           outcome: !team ? '—' : team.rounds.won === team.rounds.lost ? 'Empate' : team.won ? 'Vitória' : 'Derrota',
         }];
-      }).slice(0, 5) ?? null;
+      }).slice(0, 10) ?? null;
 
     return reply({
       riotId: player.name + '#' + player.tag,
@@ -79,4 +104,8 @@ export async function POST(request: Request) {
   } catch {
     return reply({ message: 'Não foi possível consultar as estatísticas. Tente novamente.' }, 502);
   }
+}
+
+function nonnegative(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
 }

@@ -26,6 +26,8 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="agente/[id]" options={{ title: 'Agente' }} />
         <Stack.Screen name="mapa/[id]" options={{ title: 'Composição recomendada' }} />
+        <Stack.Screen name="partida/[id]" options={{ title: 'Detalhe da partida' }} />
+        <Stack.Screen name="equipe/[id]" options={{ title: 'Montador de equipe' }} />
         <Stack.Screen name="sobre" options={{ title: 'Sobre' }} />
         <Stack.Screen name="termos" options={{ title: 'Termos de uso' }} />
         <Stack.Screen name="privacidade" options={{ title: 'Política de privacidade' }} />
